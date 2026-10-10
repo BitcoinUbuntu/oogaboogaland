@@ -4,8 +4,9 @@
   const { geometry, pushVert, face, box, bevelBox, lathe, tube, merge } = BL.models;
   const { hexToRgb } = BL.math;
   // The Bitcoin Ubuntu logo: teal ground, black, white and bitcoin orange.
-  const TEAL = "#5de0c5", HAIR = "#151515", HIDE = "#1c1c1c", SPOT = "#f7931a", BELT = "#d4d8dc";
+  const TEAL = "#5de0c5", HAIR = "#151515", HIDE = "#1c1c1c", SPOT = "#f7931a", BELT = "#f2efe4";
   // A lightning bolt as two convex pieces in a cell one wide and two tall: the upper band and the lower point.
+  // The head lays it on its side, the point toward the +x striking face.
   const BOLT = [
     [[-0.1, 1], [0.38, 1], [0.1, 0.12], [-0.38, 0]],
     [[-0.12, 0.14], [0.42, 0.14], [-0.3, -1]]
@@ -36,7 +37,7 @@
     const steel = gold ? "#c9a03c" : "#5d636b", cap = gold ? "#9c7a22" : "#3b4047";
     const leather = gold ? "#6a4a22" : "#5b3520", leatherDk = gold ? "#4a3214" : "#3f2415";
     const glow = gold ? "#ff9a1f" : "#ff6a00";
-    const headY = 9.6 * u, faceZ = 1.9 * u, cell = 1.75 * u;
+    const headY = 9.6 * u, faceZ = 1.9 * u, cell = 2.2 * u;
     pieces.push(
       tube({
         rings: 14, segments: 8,
@@ -50,10 +51,10 @@
       bevelBox({ w: 1.2 * u, h: 4.8 * u, d: 4.4 * u, color: cap, offset: { x: -3.6 * u, y: headY } }),
       bevelBox({ w: 1.2 * u, h: 4.8 * u, d: 4.4 * u, color: cap, offset: { x: 3.6 * u, y: headY } })
     );
-    // The bolt reads the same way round from the front and from behind.
+    // On both broad faces the bolt points at the same striking face.
     for (const side of [1, -1]) {
       for (const piece of BOLT) {
-        pieces.push(prism(piece.map(([x, y]) => [side * x * cell, headY + y * cell]), side * (faceZ + 0.05 * u), 0.3 * u, glow));
+        pieces.push(prism(piece.map(([x, y]) => [-y * cell, headY + x * cell]), side * (faceZ + 0.05 * u), 0.3 * u, glow));
       }
       // A lit square on each striking face.
       const faceX = side * 4.25 * u;
@@ -70,7 +71,7 @@
     // stoneAxe gives the hammer the axe's heavy two-handed swing in crew.js
     look: { stoneAxe: true, skin: TEAL, hair: HAIR, fur: HIDE },
     dress: {
-      // The hide's spots, strap and loincloth flaps in the logo's orange instead of brown, on a silver belt.
+      // The hide's spots, strap and loincloth flaps in the logo's orange instead of brown, on a white belt.
       torso(k, v) {
         const spot = k.color(SPOT), belt = k.color(BELT);
         for (let x = 0; x <= 8; x++) for (let y = 0; y <= 7; y++) for (let z = 0; z <= 5; z++) {
