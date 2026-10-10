@@ -68,8 +68,7 @@
     handle: "BitcoinUbuntu",
     joined: 1791590400,
     lastCommit: 1790270916,
-    // stoneAxe gives the hammer the axe's heavy two-handed swing in crew.js
-    look: { stoneAxe: true, skin: TEAL, hair: HAIR, fur: HIDE },
+    look: { skin: TEAL, hair: HAIR, fur: HIDE },
     dress: {
       // The hide's spots, strap and loincloth flaps in the logo's orange instead of brown, on a white belt.
       torso(k, v) {
@@ -81,7 +80,8 @@
         }
         k.loin = [k.P.fur, spot];
       },
-      club: (k) => ({ default: hammerGeometry(k.h), gold: hammerGeometry(k.h, true), rest: { x: 0.24, z: 0 }, carry: { x: 0.95, z: 0 } })
+      // Held like the club, by the handle below the head.
+      club: (k) => ({ default: hammerGeometry(k.h), gold: hammerGeometry(k.h, true) })
     }
   });
 })();
