@@ -3,10 +3,8 @@
   const BL = window.BL;
   const { box, lathe, merge, moved, turnedY } = BL.models;
   const { createNode, addChild } = BL.scene;
-  // The Honey Badger: Bitcoin's mascot, and the Southern African animal that raids the bees' nests
-  // and walks off cobra bites. He wears one as a hood: its head over his brow, its silver mantle
-  // running from its forehead over his crown and down the back of his head.
-  const PELT = "#161514", MANTLE = "#dcdad2", EYE = "#f4f2ea", NOSE = "#4a4541", FANG = "#f4f2ea", TONGUE = "#b8323a";
+  // The Lion: he wears a lion's head over his brow, its dark mane framing his face from crown to chin.
+  const TAWNY = "#c99446", MANE = "#6e3f18", MANE_DK = "#4e2b10", MUZZLE = "#ecd7ad", NOSE = "#3a2620", EYE = "#24160c";
   // The collar is the genesis block's hash in beadwork without its ten leading zeros, two beads to a
   // hex digit, two bits a bead in the Bitcoin Ubuntu colours (charcoal, bone, teal, orange), high bits
   // first: 54 digits, 108 beads, starting at the front of the outer row and read left to right, then
@@ -50,45 +48,31 @@
     handle: "BitcoinUbuntu",
     joined: 1791590400,
     lastCommit: 1790270916,
-    // A bald, clean-shaven Ooga, sun-browned, with dark brows under the hood
-    look: { portrait: { min: [-1, -2, -1], max: [7, 11, 10] }, skin: "#d9a06b", hair: "#3b2a1e", bald: true, cleanShaven: true, hatY: 10 },
+    // A bald, clean-shaven Ooga, sun-browned, with dark brows under the lion's head
+    look: { portrait: { min: [-2, -2, -1], max: [8, 11, 9] }, skin: "#d9a06b", hair: "#3b2a1e", bald: true, cleanShaven: true, hatY: 10 },
     voice: {
-      poke: "Honey badger don't care.",
-      idle: ["I am because we are.", "Bitten by a cobra once. Still stacking.", "Stack sats. Ignore the bees.", "Honey badger don't care about your FUD.", "Ooga ubuntu."]
+      poke: "The lion does not lose sleep over the sheep.",
+      idle: ["I am because we are.", "Stack sats. Guard the pride.", "One pride, one chain.", "Roar softly. Carry a big knobkerrie.", "Ooga ubuntu."]
     },
     dress: {
-      // The pelt over the crown and down the back of the head, and the badger's own head over the brow:
-      // black, with the silver mantle from its forehead back, a short snout and a snarl hanging over the
-      // Ooga's forehead.
+      // A mane round the whole head, two cells deep at the sides, over the crown and in a ruff under
+      // the chin; the lion's head sits over the brow, tawny, with dark eyes, a pale muzzle and round ears.
       crown(k, v) {
-        const pelt = k.color(PELT), mantle = k.color(MANTLE), eye = k.color(EYE), nose = k.color(NOSE), fang = k.color(FANG), tongue = k.color(TONGUE);
-        const stripe = (x) => x >= 1 && x <= 5 ? mantle : pelt;
-        for (let x = -1; x <= 7; x++) for (let z = -1; z <= 5; z++) v.set(x, 7, z, stripe(x));
-        for (let x = 0; x <= 6; x++) for (let z = 0; z <= 4; z++) v.set(x, 8, z, stripe(x));
-        // The flap behind the head narrows toward the nape, the mantle tapering to a point with it.
-        for (const [y, x0, x1] of [[1, 2, 4], [2, 1, 5], [3, 0, 6], [4, -1, 7], [5, -1, 7], [6, -1, 7]]) {
-          for (let x = x0; x <= x1; x++) v.set(x, y, -1, (y > 1 ? x >= 2 && x <= 4 : x === 3) ? mantle : pelt);
-        }
-        v.del(-1, 7, -1);
-        v.del(7, 7, -1);
-        for (const x of [-1, 7]) for (let y = 4; y <= 6; y++) for (let z = 0; z <= 3; z++) v.set(x, y, z, pelt);
-        // The face is a row taller than the pelt so it reads from across the island: two-by-two white
-        // eyes with pupils set inward, a snarl of white fangs round a red tongue under the snout.
-        v.fill(0, 6, 6, 9, 4, 8, pelt);
-        v.fill(0, 6, 9, 9, 4, 8, mantle);
-        v.fill(0, 6, 8, 8, 4, 6, mantle);
-        v.fill(1, 2, 7, 8, 8, 8, eye);
-        v.fill(4, 5, 7, 8, 8, 8, eye);
-        v.set(2, 7, 8, pelt);
-        v.set(4, 7, 8, pelt);
-        v.fill(2, 4, 6, 6, 9, 9, pelt);
-        v.set(3, 7, 9, pelt);
-        v.set(3, 6, 10, nose);
-        v.set(2, 5, 9, fang);
-        v.set(3, 5, 9, tongue);
-        v.set(4, 5, 9, fang);
-        v.set(0, 10, 5, mantle);
-        v.set(6, 10, 5, mantle);
+        const mane = k.jit(k.color(MANE), k.color(MANE_DK), 0.3), tawny = k.color(TAWNY), muzzle = k.color(MUZZLE), nose = k.color(NOSE), eye = k.color(EYE);
+        v.fill(-2, 8, 0, 8, -1, -1, mane);
+        for (const x of [-2, -1, 7, 8]) v.fill(x, x, 0, 8, -1, 5, mane);
+        for (const x of [-2, 8]) v.fill(x, x, 0, 7, 6, 6, mane);
+        v.fill(-2, 8, 7, 9, -1, 4, mane);
+        v.fill(-1, 7, -1, -1, 3, 6, mane);
+        v.fill(0, 6, -2, -2, 4, 5, mane);
+        for (const [x, z] of [[-2, -1], [8, -1], [-2, 4], [8, 4]]) v.del(x, 9, z);
+        v.fill(1, 5, 6, 9, 4, 7, tawny);
+        v.set(2, 8, 7, eye);
+        v.set(4, 8, 7, eye);
+        v.fill(2, 4, 6, 7, 8, 8, muzzle);
+        v.set(3, 7, 9, nose);
+        v.set(1, 10, 4, tawny);
+        v.set(5, 10, 4, tawny);
       },
       club: (k) => ({ default: knobkerrieGeometry(k.h), gold: knobkerrieGeometry(k.h, true) }),
       extras(k) {
