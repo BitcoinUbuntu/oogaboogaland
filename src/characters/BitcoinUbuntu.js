@@ -58,9 +58,8 @@
     handle: "BitcoinUbuntu",
     joined: 1791590400,
     lastCommit: 1790270916,
-    // stoneAxe gives the hammer the axe's heavy two-handed swing in crew.js
-    // Teal skin: a stand-in until the exact Ubuntu social teal is picked
-    look: { stoneAxe: true, skin: "#1f8f8a" },
+    // stoneAxe gives the hammer the axe's heavy two-handed swing in crew.js; the skin is the Bitcoin Ubuntu logo teal
+    look: { stoneAxe: true, skin: "#5de0c5" },
     dress: {
       club: (k) => ({ default: hammerGeometry(k.h), gold: hammerGeometry(k.h, true), rest: { x: 0.24, z: 0 }, carry: { x: 0.95, z: 0 } })
     }
