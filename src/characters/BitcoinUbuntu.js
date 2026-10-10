@@ -4,9 +4,9 @@
   const { box, lathe, merge, moved, turnedY } = BL.models;
   const { createNode, addChild } = BL.scene;
   // The Honey Badger: Bitcoin's mascot, and the Southern African animal that raids the bees' nests
-  // and walks off cobra bites. He wears one as a hood: its head over his brow, its silver mantle
+  // and walks off cobra bites. He wears one as a hood: its head over his brow, its grizzled mantle
   // running from its forehead over his crown and down the back of his head.
-  const PELT = "#161514", MANTLE = "#dcdad2", EYE = "#f4f2ea", NOSE = "#4a4541", FANG = "#f4f2ea";
+  const PELT = "#161514", MANTLE = "#dcdad2", MANTLE_DK = "#9e9b94", EYE = "#f4f2ea", NOSE = "#4a4541", FANG = "#f4f2ea";
   // The collar is the genesis block's hash in beadwork without its ten leading zeros, two beads to a
   // hex digit, two bits a bead in the Bitcoin Ubuntu colours (charcoal, bone, teal, orange), high bits
   // first: 54 digits, 108 beads, starting at the front of the outer row and read left to right, then
@@ -58,16 +58,16 @@
     },
     dress: {
       // The pelt over the crown and down the back of the head, and the badger's own head over the brow:
-      // black, with the silver mantle from its forehead back, small white eyes, a short snout and two
+      // black, with the mantle grizzled pale and grey from its forehead back, small white eyes, a short snout and two
       // fangs hanging over the Ooga's forehead.
       crown(k, v) {
-        const pelt = k.color(PELT), mantle = k.color(MANTLE), eye = k.color(EYE), nose = k.color(NOSE), fang = k.color(FANG);
-        const stripe = (x) => x >= 1 && x <= 5 ? mantle : pelt;
+        const pelt = k.color(PELT), white = k.color(MANTLE), grey = k.color(MANTLE_DK), mantle = () => k.rand() < 0.35 ? grey : white, eye = k.color(EYE), nose = k.color(NOSE), fang = k.color(FANG);
+        const stripe = (x) => x >= 1 && x <= 5 ? mantle() : pelt;
         for (let x = -1; x <= 7; x++) for (let z = -1; z <= 5; z++) v.set(x, 7, z, stripe(x));
         for (let x = 0; x <= 6; x++) for (let z = 0; z <= 4; z++) v.set(x, 8, z, stripe(x));
         // The flap behind the head narrows toward the nape, the mantle tapering to a point with it.
         for (const [y, x0, x1] of [[1, 2, 4], [2, 1, 5], [3, 0, 6], [4, -1, 7], [5, -1, 7], [6, -1, 7]]) {
-          for (let x = x0; x <= x1; x++) v.set(x, y, -1, (y > 1 ? x >= 2 && x <= 4 : x === 3) ? mantle : pelt);
+          for (let x = x0; x <= x1; x++) v.set(x, y, -1, (y > 1 ? x >= 2 && x <= 4 : x === 3) ? mantle() : pelt);
         }
         v.del(-1, 7, -1);
         v.del(7, 7, -1);
@@ -81,8 +81,8 @@
         v.set(3, 8, 10, nose);
         v.set(2, 6, 9, fang);
         v.set(4, 6, 9, fang);
-        v.set(0, 10, 5, mantle);
-        v.set(6, 10, 5, mantle);
+        v.set(0, 10, 5, mantle());
+        v.set(6, 10, 5, mantle());
       },
       club: (k) => ({ default: knobkerrieGeometry(k.h), gold: knobkerrieGeometry(k.h, true) }),
       extras(k) {
