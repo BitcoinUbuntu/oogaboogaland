@@ -7,20 +7,22 @@
   // and walks off cobra bites. He wears one as a hood: its head over his brow, its silver mantle
   // running from the crown down a cape to a stub of tail.
   const PELT = "#161514", MANTLE = "#dcdad2", EYE = "#f4f2ea", NOSE = "#4a4541", FANG = "#f4f2ea";
-  // The collar spells its words in ASCII beadwork, two bits a bead (charcoal, bone, clay, orange),
-  // high bits first, each word centred at the front and read left to right.
+  // The collar is the genesis block's hash in beadwork without its ten leading zeros, two beads to a
+  // hex digit, two bits a bead (charcoal, bone, clay, orange), high bits first: 54 digits, 108 beads,
+  // starting at the front of the outer row and read left to right, then the middle row, then the inner.
+  const GENESIS = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f".replace(/^0+/, "");
   const BEADS = ["#1d1b19", "#efe6d2", "#b5532a", "#f7931a"];
-  // Outer to inner: the word, its repeats, half-width, half-depth, height at the back and drop to
-  // the front, in sixteenths of height. Each row lies on the shoulders and slopes down the chest.
-  const ROWS = [["UBUNTU", 2, 4.6, 3.4, 7.15, 1.6], ["BITCOIN", 1, 3.7, 2.7, 7.7, 0.9]];
+  // Outer to inner: bead count, half-width, half-depth, height at the back and drop to the front,
+  // in sixteenths of height. Each row lies on the shoulders and slopes down the chest.
+  const RINGS = [[42, 4.7, 3.4, 7.15, 1.6], [36, 4.1, 3, 7.5, 1.1], [30, 3.5, 2.6, 7.85, 0.6]];
   const collarGeometry = (h) => {
     const u = h / 16, pieces = [];
-    for (const [word, repeats, rx, rz, y, drop] of ROWS) {
-      const count = word.length * 4 * repeats, front = word.length * 2 - 0.5;
-      for (let i = 0; i < count; i++) {
-        const code = word.charCodeAt((i >> 2) % word.length), bead = code >> (6 - (i & 3) * 2) & 3;
-        const a = (i - front) / count * Math.PI * 2;
-        pieces.push(moved(turnedY(box({ w: 0.5 * u, h: 0.5 * u, d: 0.5 * u, color: BEADS[bead] }), a),
+    let n = 0;
+    for (const [count, rx, rz, y, drop] of RINGS) {
+      for (let i = 0; i < count; i++, n++) {
+        const digit = parseInt(GENESIS[n >> 1], 16), bead = n & 1 ? digit & 3 : digit >> 2;
+        const a = (i - 4) / count * Math.PI * 2;
+        pieces.push(moved(turnedY(box({ w: 0.54 * u, h: 0.54 * u, d: 0.54 * u, color: BEADS[bead] }), a),
           Math.sin(a) * rx * u, (y - drop * (1 + Math.cos(a)) / 2) * u, Math.cos(a) * rz * u));
       }
     }
