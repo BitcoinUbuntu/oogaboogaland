@@ -4,7 +4,7 @@
   const { geometry, pushVert, face, box, bevelBox, lathe, tube, merge } = BL.models;
   const { hexToRgb } = BL.math;
   // The Bitcoin Ubuntu logo: teal ground, black, white and bitcoin orange.
-  const TEAL = "#5de0c5", HAIR = "#151515", HIDE = "#1c1c1c", SPOT = "#f7931a", BELT = "#f2efe4";
+  const TEAL = "#5de0c5", HAIR = "#151515", HIDE = "#1c1c1c", SPOT = "#f7931a", BELT = "#ffffff";
   // A lightning bolt as two convex pieces in a cell one wide and two tall: the upper band and the lower point.
   // The head lays it on its side, the point toward the +x striking face.
   const BOLT = [
