@@ -54,7 +54,17 @@
     look: { portrait: { min: [-1, -2, -1], max: [7, 11, 10] }, skin: "#d9a06b", hair: "#3b2a1e", bald: true, cleanShaven: true, hatY: 10 },
     voice: {
       poke: "Honey badger don't care.",
-      idle: ["I am because we are.", "Bitten by a cobra once. Still stacking.", "Stack sats. Ignore the bees.", "Honey badger don't care about your FUD.", "Ooga ubuntu."]
+      idle: [
+        "Oogabuntu.",
+        "I am because we are.",
+        "Honey badger don't care about your FUD.",
+        "Not your keys, not your honey.",
+        "Read my beads, if you can.",
+        "Hard money. Thick skin.",
+        "Run your own node. Dig your own burrow.",
+        "Small badger. Big conviction.",
+        "Low time preference. High honey preference."
+      ]
     },
     dress: {
       // The pelt over the crown and down the back of the head, and the badger's own head over the brow:
