@@ -8,10 +8,11 @@
   // running from its forehead over his crown and down the back of his head.
   const PELT = "#161514", MANTLE = "#dcdad2", EYE = "#f4f2ea", NOSE = "#4a4541", FANG = "#f4f2ea";
   // The collar is the genesis block's hash in beadwork without its ten leading zeros, two beads to a
-  // hex digit, two bits a bead (charcoal, bone, clay, orange), high bits first: 54 digits, 108 beads,
-  // starting at the front of the outer row and read left to right, then the middle row, then the inner.
+  // hex digit, two bits a bead in the Bitcoin Ubuntu colours (charcoal, bone, teal, orange), high bits
+  // first: 54 digits, 108 beads, starting at the front of the outer row and read left to right, then
+  // the middle row, then the inner.
   const GENESIS = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f".replace(/^0+/, "");
-  const BEADS = ["#1d1b19", "#efe6d2", "#b5532a", "#f7931a"];
+  const BEADS = ["#1d1b19", "#efe6d2", "#5de0c5", "#f7931a"];
   // Outer to inner: bead count, half-width, half-depth, height at the back and drop to the front,
   // in sixteenths of height. Each row lies on the shoulders and slopes down the chest.
   const RINGS = [[42, 4.7, 3.4, 7.15, 1.6], [36, 4.1, 3, 7.5, 1.1], [30, 3.5, 2.6, 7.85, 0.6]];
@@ -29,7 +30,7 @@
     return merge(...pieces);
   };
   // A knobkerrie: a hardwood throwing club, a thin shaft swelling into a round knob, with three
-  // rows of the collar's beads just under the knob: bone and orange either side of charcoal and clay.
+  // rows of the collar's beads just under the knob: bone and orange either side of charcoal and teal.
   const CLUB_ROWS = [[1, 3], [0, 2], [1, 3]];
   const knobkerrieGeometry = (h, gold = false) => {
     const u = h / 16;
