@@ -63,7 +63,8 @@
       crown(k, v) {
         const pelt = k.color(PELT), white = k.color(MANTLE), grey = k.color(MANTLE_DK), mantle = () => k.rand() < 0.35 ? grey : white, eye = k.color(EYE), nose = k.color(NOSE), fang = k.color(FANG);
         const stripe = (x) => x >= 1 && x <= 5 ? mantle() : pelt;
-        for (let x = -1; x <= 7; x++) for (let z = -1; z <= 5; z++) v.set(x, 7, z, stripe(x));
+        // The crown's underside is black, so looking into the hood shows no pale pelt; only its back edge carries the mantle.
+        for (let x = -1; x <= 7; x++) for (let z = -1; z <= 5; z++) v.set(x, 7, z, z < 0 ? stripe(x) : pelt);
         for (let x = 0; x <= 6; x++) for (let z = 0; z <= 4; z++) v.set(x, 8, z, stripe(x));
         // The flap behind the head narrows toward the nape, the mantle tapering to a point with it.
         for (const [y, x0, x1] of [[1, 2, 4], [2, 1, 5], [3, 0, 6], [4, -1, 7], [5, -1, 7], [6, -1, 7]]) {
@@ -72,8 +73,8 @@
         v.del(-1, 7, -1);
         v.del(7, 7, -1);
         for (const x of [-1, 7]) for (let y = 4; y <= 6; y++) for (let z = 0; z <= 3; z++) v.set(x, y, z, pelt);
-        // A black lining over the bald crown, so no pale pelt shows from inside the hood.
-        v.fill(0, 6, 6, 6, 0, 5, pelt);
+        // A black lining at the back of the hood only, hiding the flap's pale inside; the front stays open.
+        v.fill(0, 6, 6, 6, 0, 0, pelt);
         v.fill(0, 6, 7, 9, 3, 7, pelt);
         v.fill(0, 6, 9, 9, 3, 7, mantle);
         v.fill(0, 6, 8, 8, 3, 5, mantle);
