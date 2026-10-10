@@ -6,7 +6,7 @@
   // The Honey Badger: Bitcoin's mascot, and the Southern African animal that raids the bees' nests
   // and walks off cobra bites. He wears one as a hood: its head over his brow, its grizzled mantle
   // running from its forehead over his crown and down the back of his head.
-  const PELT = "#161514", MANTLE = "#dcdad2", MANTLE_DK = "#9e9b94", EYE = "#f4f2ea", NOSE = "#4a4541", FANG = "#f4f2ea";
+  const PELT = "#161514", MANTLE = "#dcdad2", MANTLE_DK = "#9e9b94", EYE = "#e0962a", NOSE = "#4a4541", FANG = "#f4f2ea";
   // The collar is the genesis block's hash in beadwork without its ten leading zeros, two beads to a
   // hex digit, two bits a bead in the Bitcoin Ubuntu colours (charcoal, bone, teal, orange), high bits
   // first: 54 digits, 108 beads, starting at the front of the outer row and read left to right, then
@@ -58,7 +58,7 @@
     },
     dress: {
       // The pelt over the crown and down the back of the head, and the badger's own head over the brow:
-      // black, with the mantle grizzled pale and grey from its forehead back, small white eyes, a short
+      // black, with the mantle grizzled pale and grey from its forehead back, small honey eyes, a short
       // snout and two fangs hanging over the Ooga's forehead.
       crown(k, v) {
         const pelt = k.color(PELT), white = k.color(MANTLE), grey = k.color(MANTLE_DK), mantle = () => k.rand() < 0.35 ? grey : white, eye = k.color(EYE), nose = k.color(NOSE), fang = k.color(FANG);
@@ -72,11 +72,15 @@
         v.del(-1, 7, -1);
         v.del(7, 7, -1);
         for (const x of [-1, 7]) for (let y = 4; y <= 6; y++) for (let z = 0; z <= 3; z++) v.set(x, y, z, pelt);
+        // A black lining over the bald crown, so no pale pelt shows from inside the hood.
+        v.fill(0, 6, 6, 6, 0, 5, pelt);
         v.fill(0, 6, 7, 9, 3, 7, pelt);
         v.fill(0, 6, 9, 9, 3, 7, mantle);
         v.fill(0, 6, 8, 8, 3, 5, mantle);
         v.set(1, 8, 7, eye);
         v.set(5, 8, 7, eye);
+        // The honey eyes glow: bright by day, two embers under the hood at night.
+        k.headEmissive = { [eye]: 1 };
         v.fill(2, 4, 7, 8, 8, 8, pelt);
         v.set(3, 8, 9, nose);
         v.set(2, 6, 8, fang);
