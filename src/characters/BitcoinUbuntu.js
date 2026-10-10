@@ -65,24 +65,32 @@
         const white = k.color(MANTLE), grey = k.color(MANTLE_DK), mantle = () => k.rand() < 0.35 ? grey : white;
         const lining = k.color(LINING), liningDk = k.color(LINING_DK), mottle = () => k.rand() < 0.4 ? liningDk : lining;
         const stripe = (x) => x >= 1 && x <= 5 ? mantle() : pelt;
-        // The crown's underside is a dark mottled lining, so looking into the hood shows no pale pelt;
-        // only its back edge carries the mantle.
-        for (let x = -1; x <= 7; x++) for (let z = -1; z <= 5; z++) v.set(x, 7, z, z < 0 ? stripe(x) : x < 0 || x > 6 ? pelt : mottle());
-        for (let x = 0; x <= 6; x++) for (let z = 0; z <= 4; z++) v.set(x, 8, z, stripe(x));
+        // The mantle is a saddle: the whole crown and a band down each side, black below it as on the
+        // animal, so the hood reads two-tone in profile. Its underside is a dark mottled lining, so
+        // looking into the hood shows no pale pelt.
+        for (let x = -1; x <= 7; x++) for (let z = -1; z <= 5; z++) v.set(x, 7, z, z < 0 ? stripe(x) : x < 0 || x > 6 ? mantle() : mottle());
+        for (let x = 0; x <= 6; x++) for (let z = 0; z <= 4; z++) v.set(x, 8, z, mantle());
         // The flap behind the head narrows toward the nape, the mantle tapering to a point with it.
         for (const [y, x0, x1] of [[1, 2, 4], [2, 1, 5], [3, 0, 6], [4, -1, 7], [5, -1, 7], [6, -1, 7]]) {
           for (let x = x0; x <= x1; x++) v.set(x, y, -1, (y > 1 ? x >= 2 && x <= 4 : x === 3) ? mantle() : pelt);
         }
         v.del(-1, 7, -1);
         v.del(7, 7, -1);
-        for (const x of [-1, 7]) for (let y = 4; y <= 6; y++) for (let z = 0; z <= 3; z++) v.set(x, y, z, pelt);
+        for (const x of [-1, 7]) {
+          for (let y = 4; y <= 6; y++) for (let z = 0; z <= 3; z++) v.set(x, y, z, pelt);
+          v.set(x, 6, 4, pelt);
+          v.set(x, 6, 5, pelt);
+        }
         // The lining runs down the back of the hood only, hiding the flap's pale inside; the front stays open.
         v.fill(0, 6, 6, 6, 0, 0, mottle);
         v.fill(0, 6, 7, 9, 3, 7, pelt);
         v.fill(0, 6, 9, 9, 3, 7, mantle);
         v.fill(0, 6, 8, 8, 3, 5, mantle);
-        v.set(1, 8, 7, eye);
-        v.set(5, 8, 7, eye);
+        // The side band runs forward to the eyes, set at the corners of the face so they show in profile too.
+        for (const x of [0, 6]) {
+          v.set(x, 8, 6, mantle());
+          v.set(x, 8, 7, eye);
+        }
         // The honey eyes glow: bright by day, two embers under the hood at night.
         k.headEmissive = { [eye]: 1 };
         v.fill(2, 4, 7, 8, 8, 8, pelt);
