@@ -87,8 +87,8 @@
         // The badger's forelegs drape down each side over the ears, narrowing from the shoulder to a paw
         // with a pale claw, so the hood's side is a limb rather than a box.
         for (const x of [-1, 7]) {
-          for (const [y, z0, z1] of [[6, 0, 3], [5, 1, 3], [4, 2, 3], [3, 2, 3]]) v.fill(x, x, y, y, z0, z1, pelt);
-          v.set(x, 2, 3, fang);
+          for (const [y, z0, z1] of [[6, 0, 3], [5, 1, 3], [4, 2, 3], [3, 2, 3], [2, 2, 3]]) v.fill(x, x, y, y, z0, z1, pelt);
+          v.set(x, 1, 3, fang);
         }
         // The lining runs down the back of the hood only, hiding the flap's pale inside; the front stays open.
         v.fill(0, 6, 6, 6, 0, 0, mottle);
