@@ -75,6 +75,15 @@
         }
         v.del(-1, 7, -1);
         v.del(7, 7, -1);
+        // The back of the hood swells out behind the skull in two stepped layers, rounding the crown
+        // into the nape so it sits off the head like a hat rather than lying flat like hair.
+        for (let x = 1; x <= 5; x++) v.set(x, 8, -1, stripe(x));
+        for (const [y, x0, x1] of [[7, 1, 5], [6, 0, 6], [5, 0, 6], [4, 0, 6], [3, 1, 5]]) {
+          for (let x = x0; x <= x1; x++) v.set(x, y, -2, x >= 2 && x <= 4 ? mantle() : pelt);
+        }
+        for (const [y, x0, x1] of [[6, 2, 4], [5, 1, 5], [4, 2, 4]]) {
+          for (let x = x0; x <= x1; x++) v.set(x, y, -3, x >= 2 && x <= 4 ? mantle() : pelt);
+        }
         // The badger's forelegs drape down each side over the ears, narrowing from the shoulder to a paw
         // with a pale claw, so the hood's side is a limb rather than a box.
         for (const x of [-1, 7]) {
