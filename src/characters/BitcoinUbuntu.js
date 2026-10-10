@@ -56,6 +56,7 @@
       poke: "Honey badger don't care.",
       idle: [
         "Oogabuntu.",
+        "Ubuntubuga.",
         "I am because we are.",
         "Honey badger don't care about your FUD.",
         "Not your keys, not your honey.",
