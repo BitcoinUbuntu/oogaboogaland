@@ -82,7 +82,7 @@
         for (let x = 0; x <= 6; x++) for (let z = 0; z <= 4; z++) v.set(x, 8, z, stripe(x));
         // The flap behind the head narrows toward the nape, the mantle tapering to a point with it.
         for (const [y, x0, x1] of [[1, 2, 4], [2, 1, 5], [3, 0, 6], [4, -1, 7], [5, -1, 7], [6, -1, 7]]) {
-          for (let x = x0; x <= x1; x++) v.set(x, y, -1, (y > 1 ? x >= 2 && x <= 4 : x === 3) ? mantle() : pelt);
+          for (let x = x0; x <= x1; x++) v.set(x, y, -1, (y > 2 ? x >= 2 && x <= 4 : x === 3) ? mantle() : pelt);
         }
         v.del(-1, 7, -1);
         v.del(7, 7, -1);
