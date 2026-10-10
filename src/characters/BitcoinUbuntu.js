@@ -29,20 +29,17 @@
     }
     return merge(...pieces);
   };
-  // A knobkerrie: a hardwood throwing club, a thin shaft swelling into a round knob, with three
-  // rows of the collar's beads just under the knob: bone and orange either side of charcoal and teal.
-  const CLUB_ROWS = [[1, 3], [0, 2], [1, 3]];
+  // A knobkerrie: a hardwood throwing club, a thin shaft swelling into a round knob, with a row of
+  // the collar's bone and orange beads just under the knob.
   const knobkerrieGeometry = (h, gold = false) => {
     const u = h / 16;
     const wood = gold ? "#c9a03c" : "#4a2c18", knot = gold ? "#e0b84a" : "#5e3a20";
     const beads = [];
-    CLUB_ROWS.forEach((pair, row) => {
-      for (let i = 0; i < 10; i++) {
-        const a = (i + row * 0.5) / 10 * Math.PI * 2;
-        beads.push(moved(turnedY(box({ w: 0.34 * u, h: 0.4 * u, d: 0.34 * u, color: BEADS[pair[i % 2]] }), a),
-          Math.sin(a) * 0.62 * u, (7.1 + row * 0.45) * u, Math.cos(a) * 0.62 * u));
-      }
-    });
+    for (let i = 0; i < 10; i++) {
+      const a = i / 10 * Math.PI * 2;
+      beads.push(moved(turnedY(box({ w: 0.34 * u, h: 0.4 * u, d: 0.34 * u, color: BEADS[i % 2 ? 1 : 3] }), a),
+        Math.sin(a) * 0.62 * u, 7.8 * u, Math.cos(a) * 0.62 * u));
+    }
     return merge(
       lathe({ profile: [[0, -1.6 * u], [0.5 * u, -1.5 * u], [0.55 * u, 2 * u], [0.48 * u, 8.7 * u]], segments: 8, color: wood }),
       lathe({ profile: [[0.48 * u, 8.6 * u], [1.1 * u, 8.95 * u], [1.65 * u, 9.75 * u], [1.8 * u, 10.6 * u], [1.6 * u, 11.5 * u], [1 * u, 12.2 * u], [0, 12.4 * u]], segments: 8, color: knot }),
