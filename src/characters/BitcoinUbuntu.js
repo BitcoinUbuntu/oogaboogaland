@@ -6,7 +6,7 @@
   // The Honey Badger: Bitcoin's mascot, and the Southern African animal that raids the bees' nests
   // and walks off cobra bites. He wears one as a hood: its head over his brow, its silver mantle
   // running from its forehead over his crown and down the back of his head.
-  const PELT = "#161514", MANTLE = "#dcdad2", EYE = "#f4f2ea", NOSE = "#4a4541", FANG = "#f4f2ea";
+  const PELT = "#161514", MANTLE = "#dcdad2", EYE = "#f4f2ea", NOSE = "#4a4541", FANG = "#f4f2ea", TONGUE = "#b8323a";
   // The collar is the genesis block's hash in beadwork without its ten leading zeros, two beads to a
   // hex digit, two bits a bead in the Bitcoin Ubuntu colours (charcoal, bone, teal, orange), high bits
   // first: 54 digits, 108 beads, starting at the front of the outer row and read left to right, then
@@ -58,10 +58,10 @@
     },
     dress: {
       // The pelt over the crown and down the back of the head, and the badger's own head over the brow:
-      // black, with the silver mantle from its forehead back, small white eyes, a short snout and two
-      // fangs hanging over the Ooga's forehead.
+      // black, with the silver mantle from its forehead back, a short snout and a snarl hanging over the
+      // Ooga's forehead.
       crown(k, v) {
-        const pelt = k.color(PELT), mantle = k.color(MANTLE), eye = k.color(EYE), nose = k.color(NOSE), fang = k.color(FANG);
+        const pelt = k.color(PELT), mantle = k.color(MANTLE), eye = k.color(EYE), nose = k.color(NOSE), fang = k.color(FANG), tongue = k.color(TONGUE);
         const stripe = (x) => x >= 1 && x <= 5 ? mantle : pelt;
         for (let x = -1; x <= 7; x++) for (let z = -1; z <= 5; z++) v.set(x, 7, z, stripe(x));
         for (let x = 0; x <= 6; x++) for (let z = 0; z <= 4; z++) v.set(x, 8, z, stripe(x));
@@ -72,15 +72,21 @@
         v.del(-1, 7, -1);
         v.del(7, 7, -1);
         for (const x of [-1, 7]) for (let y = 4; y <= 6; y++) for (let z = 0; z <= 3; z++) v.set(x, y, z, pelt);
-        v.fill(0, 6, 7, 9, 4, 8, pelt);
+        // The face is a row taller than the pelt so it reads from across the island: two-by-two white
+        // eyes with pupils set inward, a snarl of white fangs round a red tongue under the snout.
+        v.fill(0, 6, 6, 9, 4, 8, pelt);
         v.fill(0, 6, 9, 9, 4, 8, mantle);
         v.fill(0, 6, 8, 8, 4, 6, mantle);
-        v.set(1, 8, 8, eye);
-        v.set(5, 8, 8, eye);
-        v.fill(2, 4, 7, 8, 9, 9, pelt);
-        v.set(3, 8, 10, nose);
-        v.set(2, 6, 9, fang);
-        v.set(4, 6, 9, fang);
+        v.fill(1, 2, 7, 8, 8, 8, eye);
+        v.fill(4, 5, 7, 8, 8, 8, eye);
+        v.set(2, 7, 8, pelt);
+        v.set(4, 7, 8, pelt);
+        v.fill(2, 4, 6, 6, 9, 9, pelt);
+        v.set(3, 7, 9, pelt);
+        v.set(3, 6, 10, nose);
+        v.set(2, 5, 9, fang);
+        v.set(3, 5, 9, tongue);
+        v.set(4, 5, 9, fang);
         v.set(0, 10, 5, mantle);
         v.set(6, 10, 5, mantle);
       },
