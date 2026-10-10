@@ -4,7 +4,7 @@
   const { geometry, pushVert, face, box, bevelBox, lathe, tube, merge } = BL.models;
   const { hexToRgb } = BL.math;
   // The Bitcoin Ubuntu logo: teal ground, black, white and bitcoin orange.
-  const TEAL = "#5de0c5", HAIR = "#151515", HIDE = "#1c1c1c", SPOT = "#f7931a";
+  const TEAL = "#5de0c5", HAIR = "#151515", HIDE = "#1c1c1c", SPOT = "#f7931a", BELT = "#d4d8dc";
   // A lightning bolt as two convex pieces in a cell one wide and two tall: the upper band and the lower point.
   const BOLT = [
     [[-0.1, 1], [0.38, 1], [0.1, 0.12], [-0.38, 0]],
@@ -70,10 +70,14 @@
     // stoneAxe gives the hammer the axe's heavy two-handed swing in crew.js
     look: { stoneAxe: true, skin: TEAL, hair: HAIR, fur: HIDE },
     dress: {
-      // The hide's spots, strap and loincloth flaps in the logo's orange instead of brown.
+      // The hide's spots, strap and loincloth flaps in the logo's orange instead of brown, on a silver belt.
       torso(k, v) {
-        const spot = k.color(SPOT);
-        for (let x = 0; x <= 8; x++) for (let y = 0; y <= 7; y++) for (let z = 0; z <= 5; z++) if (v.get(x, y, z) === k.P.spot) v.set(x, y, z, spot);
+        const spot = k.color(SPOT), belt = k.color(BELT);
+        for (let x = 0; x <= 8; x++) for (let y = 0; y <= 7; y++) for (let z = 0; z <= 5; z++) {
+          const c = v.get(x, y, z);
+          if (c === k.P.spot) v.set(x, y, z, spot);
+          else if (c === k.P.wood && y === 3) v.set(x, y, z, belt);
+        }
         k.loin = [k.P.fur, spot];
       },
       club: (k) => ({ default: hammerGeometry(k.h), gold: hammerGeometry(k.h, true), rest: { x: 0.24, z: 0 }, carry: { x: 0.95, z: 0 } })
