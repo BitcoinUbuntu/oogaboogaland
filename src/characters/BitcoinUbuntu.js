@@ -72,17 +72,17 @@
         v.del(-1, 7, -1);
         v.del(7, 7, -1);
         for (const x of [-1, 7]) for (let y = 4; y <= 6; y++) for (let z = 0; z <= 3; z++) v.set(x, y, z, pelt);
-        v.fill(0, 6, 7, 9, 4, 8, pelt);
-        v.fill(0, 6, 9, 9, 4, 8, mantle);
-        v.fill(0, 6, 8, 8, 4, 6, mantle);
-        v.set(1, 8, 8, eye);
-        v.set(5, 8, 8, eye);
-        v.fill(2, 4, 7, 8, 9, 9, pelt);
-        v.set(3, 8, 10, nose);
-        v.set(2, 6, 9, fang);
-        v.set(4, 6, 9, fang);
-        v.set(0, 10, 5, mantle());
-        v.set(6, 10, 5, mantle());
+        v.fill(0, 6, 7, 9, 3, 7, pelt);
+        v.fill(0, 6, 9, 9, 3, 7, mantle);
+        v.fill(0, 6, 8, 8, 3, 5, mantle);
+        v.set(1, 8, 7, eye);
+        v.set(5, 8, 7, eye);
+        v.fill(2, 4, 7, 8, 8, 8, pelt);
+        v.set(3, 8, 9, nose);
+        v.set(2, 6, 8, fang);
+        v.set(4, 6, 8, fang);
+        v.set(0, 10, 4, mantle());
+        v.set(6, 10, 4, mantle());
       },
       club: (k) => ({ default: knobkerrieGeometry(k.h), gold: knobkerrieGeometry(k.h, true) }),
       extras(k) {
