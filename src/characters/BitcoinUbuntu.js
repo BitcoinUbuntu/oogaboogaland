@@ -58,8 +58,8 @@
     },
     dress: {
       // The pelt over the crown and down the back of the head, and the badger's own head over the brow:
-      // black, with the mantle grizzled pale and grey from its forehead back, small white eyes, a short snout and two
-      // fangs hanging over the Ooga's forehead.
+      // black, with the mantle grizzled pale and grey from its forehead back, small white eyes, a short
+      // snout and two fangs hanging over the Ooga's forehead.
       crown(k, v) {
         const pelt = k.color(PELT), white = k.color(MANTLE), grey = k.color(MANTLE_DK), mantle = () => k.rand() < 0.35 ? grey : white, eye = k.color(EYE), nose = k.color(NOSE), fang = k.color(FANG);
         const stripe = (x) => x >= 1 && x <= 5 ? mantle() : pelt;
