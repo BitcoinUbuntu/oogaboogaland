@@ -44,8 +44,8 @@
     handle: "BitcoinUbuntu",
     joined: 1791590400,
     lastCommit: 1790270916,
-    // A bald, clean-shaven elder whose brows have gone white
-    look: { skin: "#6f4428", hair: "#ece6da", bald: true, cleanShaven: true },
+    // A bald, clean-shaven elder, sun-browned, with dark brows
+    look: { skin: "#d9a06b", hair: "#3b2a1e", bald: true, cleanShaven: true },
     voice: {
       poke: "Sit. I will tell you about block zero.",
       idle: ["I am because we are.", "Every bead a block. I remember them all.", "Eight zeros. The first work.", "The chain is long. The story is longer.", "Ooga ubuntu."]
