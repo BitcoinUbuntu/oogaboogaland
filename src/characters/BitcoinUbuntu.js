@@ -1,12 +1,9 @@
 (() => {
   "use strict";
   const BL = window.BL;
-  const { box, lathe, merge, moved, turnedY } = BL.models;
+  const { box, lathe, tube, merge, moved, turnedY } = BL.models;
   const { createNode, addChild } = BL.scene;
-  // The Honey Badger: Bitcoin's mascot, and the Southern African animal that raids the bees' nests
-  // and walks off cobra bites. He wears one as a hood: its head over his brow, its silver mantle
-  // running from the crown down a cape to a stub of tail.
-  const PELT = "#161514", MANTLE = "#dcdad2", EYE = "#f4f2ea", NOSE = "#4a4541", FANG = "#f4f2ea";
+  // A headdress of ostrich plumes over a beaded band, a beaded collar that spells its words, and a knobkerrie.
   // The collar spells its words in ASCII beadwork, two bits a bead (charcoal, bone, clay, orange),
   // high bits first, each word centred at the front and read left to right.
   const BEADS = ["#1d1b19", "#efe6d2", "#b5532a", "#f7931a"];
@@ -42,49 +39,54 @@
       ...beads
     );
   };
+  // Five ostrich plumes fanned from the crown and swept back: black at the middle and the edges, white
+  // between, each a thin quill swelling into a soft plume. Built in the head's own space.
+  const plumesGeometry = (h) => {
+    const u = h / 16, plumes = [];
+    for (let j = -2; j <= 2; j++) {
+      const fan = j * 0.34, length = (8.5 - Math.abs(j) * 1.1) * u, color = j % 2 ? "#f2efe6" : "#1a1918";
+      plumes.push(tube({
+        rings: 10, segments: 6, colorFn: () => color,
+        radius: (t) => (0.18 + 0.85 * Math.pow(Math.sin(Math.PI * t), 0.7)) * u,
+        path: (t) => {
+          const s = t * length;
+          return { x: Math.sin(fan) * (s + 0.3 * s * s / length), y: 6.6 * u + Math.cos(fan) * 0.94 * s - 0.2 * s * s / length, z: -1.2 * u - 0.34 * s };
+        }
+      }));
+    }
+    return merge(...plumes);
+  };
   BL.characters.add({
     handle: "BitcoinUbuntu",
     joined: 1791590400,
     lastCommit: 1790270916,
-    // A bald, clean-shaven Ooga, sun-browned, with dark brows under the hood
-    look: { portrait: { min: [-1, -2, -1], max: [7, 11, 10] }, skin: "#d9a06b", hair: "#3b2a1e", bald: true, cleanShaven: true, hatY: 10 },
+    // A bald, clean-shaven Ooga, sun-browned, with dark brows under the band
+    look: { portrait: { min: [-1, -2, -1], max: [7, 7, 8] }, skin: "#d9a06b", hair: "#3b2a1e", bald: true, cleanShaven: true, hatY: 9 },
     voice: {
-      poke: "Honey badger don't care.",
-      idle: ["I am because we are.", "Bitten by a cobra once. Still stacking.", "Stack sats. Ignore the bees.", "Honey badger don't care about your FUD.", "Ooga ubuntu."]
+      poke: "Sit by the fire, friend.",
+      idle: ["I am because we are.", "Every bead spells a word. Read closer.", "Stack sats. Share the fire.", "One tribe, one chain.", "Ooga ubuntu."]
     },
     dress: {
-      // The pelt over the crown and down the back of the head, and the badger's own head over the brow:
-      // black, with the silver mantle from its forehead back, small white eyes, a short snout and two
-      // fangs hanging over the Ooga's forehead.
+      // A beaded band round the brow, two rows deep, with an orange boss at the front and a short
+      // fringe of beads hanging past each ear.
       crown(k, v) {
-        const pelt = k.color(PELT), mantle = k.color(MANTLE), eye = k.color(EYE), nose = k.color(NOSE), fang = k.color(FANG);
-        const stripe = (x) => x >= 1 && x <= 5 ? mantle : pelt;
-        for (let x = -1; x <= 7; x++) for (let z = -1; z <= 5; z++) v.set(x, 7, z, stripe(x));
-        for (let x = 0; x <= 6; x++) for (let z = 0; z <= 4; z++) v.set(x, 8, z, stripe(x));
-        for (let x = -1; x <= 7; x++) for (let y = 1; y <= 6; y++) v.set(x, y, -1, x >= 2 && x <= 4 ? mantle : pelt);
-        for (const x of [-1, 7]) for (let y = 4; y <= 6; y++) for (let z = 0; z <= 3; z++) v.set(x, y, z, pelt);
-        v.fill(0, 6, 7, 9, 4, 8, pelt);
-        v.fill(0, 6, 9, 9, 4, 8, mantle);
-        v.fill(0, 6, 8, 8, 4, 6, mantle);
-        v.set(1, 8, 8, eye);
-        v.set(5, 8, 8, eye);
-        v.fill(2, 4, 7, 8, 9, 9, pelt);
-        v.set(3, 8, 10, nose);
-        v.set(2, 6, 9, fang);
-        v.set(4, 6, 9, fang);
-        v.set(0, 10, 5, mantle);
-        v.set(6, 10, 5, mantle);
+        const beads = BEADS.map((hex) => k.color(hex));
+        const lower = [beads[3], beads[1], beads[2], beads[1]];
+        const ring = [];
+        for (let x = 0; x <= 6; x++) ring.push([x, 6]);
+        for (let z = 5; z >= 0; z--) ring.push([7, z]);
+        for (let x = 6; x >= 0; x--) ring.push([x, -1]);
+        for (let z = 0; z <= 5; z++) ring.push([-1, z]);
+        ring.forEach(([x, z], i) => {
+          v.set(x, 5, z, lower[i % 4]);
+          v.set(x, 6, z, i % 2 ? beads[1] : beads[0]);
+        });
+        v.fill(2, 4, 5, 6, 6, 6, beads[3]);
+        v.set(3, 6, 7, beads[3]);
+        for (const x of [-1, 7]) for (let y = 1; y <= 4; y++) v.set(x, y, 4, y % 2 ? beads[3] : beads[1]);
       },
-      // The pelt hangs down the back as a cape, silver down the middle, ending in a stub of black tail.
-      torso(k, v) {
-        const pelt = k.color(PELT), mantle = k.color(MANTLE);
-        for (let x = 2; x <= 6; x++) {
-          const c = x >= 3 && x <= 5 ? mantle : pelt;
-          for (let y = 3; y <= 7; y++) v.set(x, y, 0, c);
-          for (let y = -2; y <= 7; y++) v.set(x, y, -1, c);
-        }
-        v.set(4, -3, -1, pelt);
-        v.set(4, -4, -2, pelt);
+      headgear(k) {
+        addChild(k.parts.head, createNode({ geometry: plumesGeometry(k.h) }));
       },
       club: (k) => ({ default: knobkerrieGeometry(k.h), gold: knobkerrieGeometry(k.h, true) }),
       extras(k) {
