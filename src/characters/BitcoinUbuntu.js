@@ -5,7 +5,7 @@
   const { createNode, addChild } = BL.scene;
   // The Honey Badger: Bitcoin's mascot, and the Southern African animal that raids the bees' nests
   // and walks off cobra bites. He wears one as a hood: its head over his brow, its silver mantle
-  // running from the crown down a cape to a stub of tail.
+  // running from its forehead over his crown and down the back of his head.
   const PELT = "#161514", MANTLE = "#dcdad2", EYE = "#f4f2ea", NOSE = "#4a4541", FANG = "#f4f2ea";
   // The collar is the genesis block's hash in beadwork without its ten leading zeros, two beads to a
   // hex digit, two bits a bead (charcoal, bone, clay, orange), high bits first: 54 digits, 108 beads,
@@ -49,7 +49,7 @@
     joined: 1791590400,
     lastCommit: 1790270916,
     // A bald, clean-shaven Ooga, sun-browned, with dark brows under the hood
-    look: { portrait: { min: [-1, -2, -1], max: [7, 11, 8] }, skin: "#d9a06b", hair: "#3b2a1e", bald: true, cleanShaven: true, hatY: 10 },
+    look: { portrait: { min: [-1, -2, -1], max: [7, 11, 10] }, skin: "#d9a06b", hair: "#3b2a1e", bald: true, cleanShaven: true, hatY: 10 },
     voice: {
       poke: "Honey badger don't care.",
       idle: ["I am because we are.", "Bitten by a cobra once. Still stacking.", "Stack sats. Ignore the bees.", "Honey badger don't care about your FUD.", "Ooga ubuntu."]
@@ -63,30 +63,19 @@
         const stripe = (x) => x >= 1 && x <= 5 ? mantle : pelt;
         for (let x = -1; x <= 7; x++) for (let z = -1; z <= 5; z++) v.set(x, 7, z, stripe(x));
         for (let x = 0; x <= 6; x++) for (let z = 0; z <= 4; z++) v.set(x, 8, z, stripe(x));
-        for (let x = 0; x <= 6; x++) for (let y = 3; y <= 6; y++) v.set(x, y, -1, x >= 2 && x <= 4 ? mantle : pelt);
+        for (let x = -1; x <= 7; x++) for (let y = 1; y <= 6; y++) v.set(x, y, -1, x >= 2 && x <= 4 ? mantle : pelt);
         for (const x of [-1, 7]) for (let y = 4; y <= 6; y++) for (let z = 0; z <= 3; z++) v.set(x, y, z, pelt);
-        v.fill(0, 6, 7, 9, 2, 6, pelt);
-        v.fill(0, 6, 9, 9, 2, 6, mantle);
-        v.fill(0, 6, 8, 8, 2, 4, mantle);
-        v.set(1, 8, 6, eye);
-        v.set(5, 8, 6, eye);
-        v.fill(2, 4, 7, 8, 7, 7, pelt);
-        v.set(3, 8, 8, nose);
-        v.set(2, 6, 7, fang);
-        v.set(4, 6, 7, fang);
-        v.set(0, 10, 3, mantle);
-        v.set(6, 10, 3, mantle);
-      },
-      // The pelt hangs down the back to the belt as a cape, silver down the middle, with a stub of black tail.
-      torso(k, v) {
-        const pelt = k.color(PELT), mantle = k.color(MANTLE);
-        for (let x = 2; x <= 6; x++) {
-          const c = x >= 3 && x <= 5 ? mantle : pelt;
-          for (let y = 3; y <= 7; y++) v.set(x, y, 0, c);
-          for (let y = 3; y <= 7; y++) v.set(x, y, -1, c);
-        }
-        v.set(4, 2, -1, pelt);
-        v.set(4, 1, -2, pelt);
+        v.fill(0, 6, 7, 9, 4, 8, pelt);
+        v.fill(0, 6, 9, 9, 4, 8, mantle);
+        v.fill(0, 6, 8, 8, 4, 6, mantle);
+        v.set(1, 8, 8, eye);
+        v.set(5, 8, 8, eye);
+        v.fill(2, 4, 7, 8, 9, 9, pelt);
+        v.set(3, 8, 10, nose);
+        v.set(2, 6, 9, fang);
+        v.set(4, 6, 9, fang);
+        v.set(0, 10, 5, mantle);
+        v.set(6, 10, 5, mantle);
       },
       club: (k) => ({ default: knobkerrieGeometry(k.h), gold: knobkerrieGeometry(k.h, true) }),
       extras(k) {
