@@ -79,7 +79,7 @@
     joined: 1791876857,
     lastCommit: 1790270916,
     look: {
-      build: "slim", height: 1.12, hairless: true, noBrow: true, noPupils: true, face: "nose", hatY: 10,
+      build: "slim", height: 1.12, hairless: true, noBrow: true, noPupils: true, face: "nose", hatY: 14,
       portrait: { min: [-2, -3, -2], max: [8, 9, 8] },
       skin: "#d9a06b", hair: "#35271b", fur: "#5e4833"
     },
@@ -147,6 +147,11 @@
         v.fill(7, 7, 0, 5, -1, 5, mass);
         v.fill(-1, 7, 0, 5, -1, -1, mass);
         v.del(3, 6, 5);
+        // The top ropes gathered into a loose knot at the crown, wound with a bone and ochre cord.
+        v.fill(1, 5, 10, 10, 0, 3, mass);
+        v.fill(2, 4, 11, 12, 0, 3, (x, y, z) => y === 11 ? (x + z) % 2 ? C.bone : C.ochre : mass(x, y, z));
+        v.fill(2, 4, 13, 13, 1, 2, mass);
+        v.set(3, 14, 1, C.deepLt);
         headBeads = [];
         lay(v, C, HEAD_ROPES, headBeads);
       },
