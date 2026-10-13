@@ -1,48 +1,24 @@
 (() => {
   "use strict";
   const BL = window.BL;
-  const { lathe, merge, moved, turnedY, turnedZ } = BL.models;
-  const { createNode, addChild } = BL.scene;
-  // The Honey Badger: Bitcoin's mascot, and the Southern African animal that raids the bees' nests
+  const { box, lathe, merge, moved, turnedY } = BL.models;
+    // The Honey Badger: Bitcoin's mascot, and the Southern African animal that raids the bees' nests
   // and walks off cobra bites. He wears one as a hood: its head over his brow, its grizzled mantle
   // running from its forehead over his crown and down the back of his head.
   const PELT = "#161514", MANTLE = "#dcdad2", MANTLE_DK = "#9e9b94", LINING = "#4b4844", LINING_DK = "#34322f", EYE = "#e0962a", NOSE = "#4a4541", FANG = "#f4f2ea";
-  // The collar is the genesis block's hash in beadwork without its ten leading zeros, two beads to a
-  // hex digit, two bits a bead in the Bitcoin Ubuntu colours (charcoal, bone, teal, orange), high bits
-  // first: 54 digits, 108 beads, starting at the front of the outer row and read left to right, then
-  // the middle row, then the inner.
-  const GENESIS = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f".replace(/^0+/, "");
-  const BEADS = ["#1d1b19", "#efe6d2", "#5de0c5", "#f7931a"];
-  // Outer to inner: bead count, half-width, half-depth, height at the back and drop to the front,
-  // in sixteenths of height. Each row lies on the shoulders and slopes down the chest.
-  const RINGS = [[42, 4.7, 3.4, 7.15, 1.6], [36, 4.1, 3, 7.5, 1.1], [30, 3.5, 2.6, 7.85, 0.6]];
-  // A rounded bead strung along x: a short barrel with softened ends, turned to face along its string.
-  const bead = (radius, length, color, a) => {
-    const r = radius, l = length / 2;
-    return turnedY(turnedZ(lathe({ profile: [[0, -l], [r * 0.65, -l], [r, -l * 0.45], [r, l * 0.45], [r * 0.65, l], [0, l]], segments: 8, color }), Math.PI / 2), a);
-  };
-  const collarGeometry = (h) => {
-    const u = h / 16, pieces = [];
-    let n = 0;
-    for (const [count, rx, rz, y, drop] of RINGS) {
-      for (let i = 0; i < count; i++, n++) {
-        const digit = parseInt(GENESIS[n >> 1], 16), beadColor = n & 1 ? digit & 3 : digit >> 2;
-        const a = (i - 4) / count * Math.PI * 2;
-        pieces.push(moved(bead(0.3 * u, 0.52 * u, BEADS[beadColor], a),
-          Math.sin(a) * rx * u, (y - drop * (1 + Math.cos(a)) / 2) * u, Math.cos(a) * rz * u));
-      }
-    }
-    return merge(...pieces);
-  };
+  // A beaded bracelet on the right wrist in the Bitcoin Ubuntu colours: orange and teal between bone.
+  const BEADS = ["#f7931a", "#efe6d2", "#5de0c5", "#efe6d2"];
+  // The bracelet's cells round the forearm, clockwise from the front left, one row above the fist.
+  const BRACELET = [[-1, 3], [0, 3], [1, 3], [2, 3], [3, 3], [3, 2], [3, 1], [3, 0], [3, -1], [2, -1], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1], [-1, 2]];
   // A knobkerrie: a hardwood throwing club, a thin shaft swelling into a round knob, with a row of
-  // the collar's bone and orange beads just under the knob.
+  // bone and orange beads just under the knob.
   const knobkerrieGeometry = (h, gold = false) => {
     const u = h / 16;
     const wood = gold ? "#c9a03c" : "#4a2c18", knot = gold ? "#e0b84a" : "#5e3a20";
     const beads = [];
     for (let i = 0; i < 10; i++) {
       const a = i / 10 * Math.PI * 2;
-      beads.push(moved(bead(0.22 * u, 0.38 * u, BEADS[i % 2 ? 1 : 3], a),
+      beads.push(moved(turnedY(box({ w: 0.34 * u, h: 0.4 * u, d: 0.34 * u, color: BEADS[i % 2 ? 1 : 0] }), a),
         Math.sin(a) * 0.62 * u, 7.8 * u, Math.cos(a) * 0.62 * u));
     }
     return merge(
@@ -65,7 +41,6 @@
         "I am because we are.",
         "Honey badger don't care about your FUD.",
         "Not your keys, not your honey.",
-        "Read my beads, if you can.",
         "Hard money. Thick skin.",
         "Run your own node. Dig your own burrow.",
         "Small badger. Big conviction.",
@@ -120,8 +95,14 @@
         v.set(6, 10, 4, mantle());
       },
       club: (k) => ({ default: knobkerrieGeometry(k.h), gold: knobkerrieGeometry(k.h, true) }),
-      extras(k) {
-        addChild(k.parts.torso, createNode({ geometry: collarGeometry(k.h) }));
+      // The right arm again, as models.js builds it, with the bracelet round the wrist.
+      gear(k) {
+        const v = BL.models.makeVox(), beads = BEADS.map((hex) => k.color(hex));
+        v.fill(0, 2, 2, 7, 0, 2, k.skinJ);
+        v.fill(-1, 3, 8, 10, -1, 3, k.skinJ);
+        v.fill(-1, 3, 0, 1, -1, 3, k.skinJ);
+        BRACELET.forEach(([x, z], n) => v.set(x, 3, z, beads[n % beads.length]));
+        k.parts.armR.geometry = k.vg(v, { x: -1.5 * k.u, y: -11 * k.u, z: -1.5 * k.u });
       }
     }
   });
