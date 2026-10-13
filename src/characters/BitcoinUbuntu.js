@@ -6,21 +6,22 @@
   // and walks off cobra bites. He wears one as a hood: its head over his brow, its grizzled mantle
   // running from its forehead over his crown and down the back of his head.
   const PELT = "#161514", MANTLE = "#dcdad2", MANTLE_DK = "#9e9b94", LINING = "#4b4844", LINING_DK = "#34322f", EYE = "#e0962a", NOSE = "#4a4541", FANG = "#f4f2ea";
-  // A beaded bracelet on the right wrist in the Bitcoin Ubuntu colours: orange and teal between bone.
-  const BEADS = ["#f7931a", "#efe6d2", "#5de0c5", "#efe6d2"];
-  // The bracelet's cells round the forearm, clockwise from the front left, one row above the fist.
-  const BRACELET = [[-1, 3], [0, 3], [1, 3], [2, 3], [3, 3], [3, 2], [3, 1], [3, 0], [3, -1], [2, -1], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1], [-1, 2]];
-  // A knobkerrie: a hardwood throwing club, a thin shaft swelling into a round knob, with a row of
-  // bone and orange beads just under the knob.
+  // Beads in the Bitcoin Ubuntu colours: charcoal, bone, teal, orange.
+  const BEADS = ["#1d1b19", "#efe6d2", "#5de0c5", "#f7931a"];
+  // A knobkerrie: a hardwood throwing club, a thin shaft swelling into a round knob, with three rows
+  // of beads just under the knob: bone and orange either side of charcoal and teal.
+  const CLUB_ROWS = [[1, 3], [0, 2], [1, 3]];
   const knobkerrieGeometry = (h, gold = false) => {
     const u = h / 16;
     const wood = gold ? "#c9a03c" : "#4a2c18", knot = gold ? "#e0b84a" : "#5e3a20";
     const beads = [];
-    for (let i = 0; i < 10; i++) {
-      const a = i / 10 * Math.PI * 2;
-      beads.push(moved(turnedY(box({ w: 0.34 * u, h: 0.4 * u, d: 0.34 * u, color: BEADS[i % 2 ? 1 : 0] }), a),
-        Math.sin(a) * 0.62 * u, 7.8 * u, Math.cos(a) * 0.62 * u));
-    }
+    CLUB_ROWS.forEach((pair, row) => {
+      for (let i = 0; i < 10; i++) {
+        const a = (i + row * 0.5) / 10 * Math.PI * 2;
+        beads.push(moved(turnedY(box({ w: 0.34 * u, h: 0.4 * u, d: 0.34 * u, color: BEADS[pair[i % 2]] }), a),
+          Math.sin(a) * 0.62 * u, (7.1 + row * 0.45) * u, Math.cos(a) * 0.62 * u));
+      }
+    });
     return merge(
       lathe({ profile: [[0, -1.6 * u], [0.5 * u, -1.5 * u], [0.55 * u, 2 * u], [0.48 * u, 8.7 * u]], segments: 8, color: wood }),
       lathe({ profile: [[0.48 * u, 8.6 * u], [1.1 * u, 8.95 * u], [1.65 * u, 9.75 * u], [1.8 * u, 10.6 * u], [1.6 * u, 11.5 * u], [1 * u, 12.2 * u], [0, 12.4 * u]], segments: 8, color: knot }),
@@ -94,16 +95,7 @@
         v.set(0, 10, 4, mantle());
         v.set(6, 10, 4, mantle());
       },
-      club: (k) => ({ default: knobkerrieGeometry(k.h), gold: knobkerrieGeometry(k.h, true) }),
-      // The right arm again, as models.js builds it, with the bracelet round the wrist.
-      gear(k) {
-        const v = BL.models.makeVox(), beads = BEADS.map((hex) => k.color(hex));
-        v.fill(0, 2, 2, 7, 0, 2, k.skinJ);
-        v.fill(-1, 3, 8, 10, -1, 3, k.skinJ);
-        v.fill(-1, 3, 0, 1, -1, 3, k.skinJ);
-        BRACELET.forEach(([x, z], n) => v.set(x, 3, z, beads[n % beads.length]));
-        k.parts.armR.geometry = k.vg(v, { x: -1.5 * k.u, y: -11 * k.u, z: -1.5 * k.u });
-      }
+      club: (k) => ({ default: knobkerrieGeometry(k.h), gold: knobkerrieGeometry(k.h, true) })
     }
   });
 })();
