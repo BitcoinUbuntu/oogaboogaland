@@ -1,31 +1,37 @@
 (() => {
   "use strict";
   const BL = window.BL;
-  const { box, lathe, merge, moved, turnedY } = BL.models;
+  const { lathe, merge, moved, turnedY, turnedZ } = BL.models;
+  const { createNode, addChild } = BL.scene;
     // The Honey Badger: Bitcoin's mascot, and the Southern African animal that raids the bees' nests
   // and walks off cobra bites. He wears one as a hood: its head over his brow, its grizzled mantle
   // running from its forehead over his crown and down the back of his head.
   const PELT = "#161514", MANTLE = "#dcdad2", MANTLE_DK = "#9e9b94", LINING = "#4b4844", LINING_DK = "#34322f", EYE = "#e0962a", NOSE = "#4a4541", FANG = "#f4f2ea";
   // Beads in the Bitcoin Ubuntu colours: charcoal, bone, teal, orange.
   const BEADS = ["#1d1b19", "#efe6d2", "#5de0c5", "#f7931a"];
-  // A knobkerrie: a hardwood throwing club, a thin shaft swelling into a round knob, with three rows
-  // of beads just under the knob: bone and orange either side of charcoal and teal.
-  const CLUB_ROWS = [[1, 3], [0, 2], [1, 3]];
+  // A single strand of rounded beads hanging from the neck and sloping down the chest: teal and
+  // orange in turn, each between two bone beads. A bead is a short barrel turned along its string.
+  const NECKLACE = [1, 2, 1, 3];
+  const bead = (radius, length, color, a) => {
+    const l = length / 2;
+    return turnedY(turnedZ(lathe({ profile: [[0, -l], [radius * 0.65, -l], [radius, -l * 0.45], [radius, l * 0.45], [radius * 0.65, l], [0, l]], segments: 8, color }), Math.PI / 2), a);
+  };
+  const necklaceGeometry = (h) => {
+    const u = h / 16, pieces = [], count = 36;
+    for (let i = 0; i < count; i++) {
+      const a = (i - 1.5) / count * Math.PI * 2;
+      pieces.push(moved(bead(0.32 * u, 0.56 * u, BEADS[NECKLACE[i % NECKLACE.length]], a),
+        Math.sin(a) * 3.9 * u, (7.7 - 1.7 * (1 + Math.cos(a)) / 2) * u, Math.cos(a) * 2.9 * u));
+    }
+    return merge(...pieces);
+  };
+  // A knobkerrie: a hardwood throwing club, a thin shaft swelling into a round knob.
   const knobkerrieGeometry = (h, gold = false) => {
     const u = h / 16;
     const wood = gold ? "#c9a03c" : "#4a2c18", knot = gold ? "#e0b84a" : "#5e3a20";
-    const beads = [];
-    CLUB_ROWS.forEach((pair, row) => {
-      for (let i = 0; i < 10; i++) {
-        const a = (i + row * 0.5) / 10 * Math.PI * 2;
-        beads.push(moved(turnedY(box({ w: 0.34 * u, h: 0.4 * u, d: 0.34 * u, color: BEADS[pair[i % 2]] }), a),
-          Math.sin(a) * 0.62 * u, (7.1 + row * 0.45) * u, Math.cos(a) * 0.62 * u));
-      }
-    });
     return merge(
       lathe({ profile: [[0, -1.6 * u], [0.5 * u, -1.5 * u], [0.55 * u, 2 * u], [0.48 * u, 8.7 * u]], segments: 8, color: wood }),
       lathe({ profile: [[0.48 * u, 8.6 * u], [1.1 * u, 8.95 * u], [1.65 * u, 9.75 * u], [1.8 * u, 10.6 * u], [1.6 * u, 11.5 * u], [1 * u, 12.2 * u], [0, 12.4 * u]], segments: 8, color: knot }),
-      ...beads
     );
   };
   BL.characters.add({
@@ -95,7 +101,10 @@
         v.set(0, 10, 4, mantle());
         v.set(6, 10, 4, mantle());
       },
-      club: (k) => ({ default: knobkerrieGeometry(k.h), gold: knobkerrieGeometry(k.h, true) })
+      club: (k) => ({ default: knobkerrieGeometry(k.h), gold: knobkerrieGeometry(k.h, true) }),
+      extras(k) {
+        addChild(k.parts.torso, createNode({ geometry: necklaceGeometry(k.h) }));
+      }
     }
   });
 })();
