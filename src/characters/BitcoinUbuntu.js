@@ -1,194 +1,134 @@
 (() => {
   "use strict";
   const BL = window.BL;
-  const { lathe, merge, moved, makeVox } = BL.models;
-  const { createNode, addChild } = BL.scene;
-  const { hexToRgb } = BL.math;
-  // The Diviner: rope dreads to the waist, strung with bone, ochre and teal beads; pale
-  // half-lidded eyes; a dusk-dyed mantle; a crook staff with knucklebones on a cord.
-  // The teal stones strung through his hair hold a little light, so at dusk he carries a
-  // scatter of small lights with him.
+  const { lathe, box, merge } = BL.models;
+  // The Elder: a honey badger worn as a hood, its forelegs over his shoulders and its paws
+  // meeting under a beaded bib, and a knobkerrie in hand. Palette from the Bitcoin Ubuntu logo.
   const colours = (k) => ({
-    deep: k.color("#3a2a1c"), deepLt: k.color("#4f3a26"), rope: k.color("#6b4e31"), light: k.color("#86683f"),
-    tip: k.color("#a3845a"), band: k.color("#3f2d1e"),
-    mantle: k.color("#363c52"), mantleDk: k.color("#282d3e"), stitch: k.color("#d6ccb2"),
-    hide: k.color("#5e4833"), hideDk: k.color("#45352a"), sash: k.color("#9c4a26"), sashDk: k.color("#7a3a1e"),
-    bone: k.color("#e4d9bf"), teal: k.color("#4b8a82"), ochre: k.color("#b5612e"),
-    eye: k.color("#c6d6cf"), pupil: k.color("#2a3a3c")
+    grey: k.color("#8e8a82"), greyLt: k.color("#a9a59b"), greyPale: k.color("#c3beb2"), bone: k.color("#e3dccb"),
+    black: k.color("#1c1b1a"), nose: k.color("#45433f"), lining: k.color("#3b3a37"), liningDk: k.color("#2a2927"),
+    teal: k.color("#5de0c5"), orange: k.color("#f7931a"), bead: k.color("#141414"), glint: k.color("#f7931a")
   });
-  // A rope's colour by height on the head's grid: lighter toward the sun-bleached ends, with
-  // a darker matted band every few cells so each one reads as twisted.
-  const ropeAt = (C, x, y, z, inner) => (y + 2 * x + z + 40) % 4 === 0 ? C.band : inner ? y > -4 ? C.rope : C.light : y > 3 ? C.rope : y > -4 ? C.light : C.tip;
-  // The mass under the ropes is striped by column, so the cap and sides read as rows of
-  // ropes running back from the parting and down the sides.
-  const massAt = (C, x, y, z) => ((x === -1 || x === 7 ? z : x) + 20) % 2 ? C.deep : C.deepLt;
-  // A rope of hair [x, z, top, tip, beads, inner] down one column; [y, kind] beads take the
-  // place of hair, and an inner rope, hanging behind the others, stays a shade darker.
-  const lay = (v, C, ropes, beads) => {
-    for (const [x, z, top, tip, marks, inner] of ropes) {
-      for (let y = top; y >= tip; y--) {
-        const mark = marks.find((m) => m[0] === y);
-        if (mark) beads.push([x, y, z, mark[1]]);
-        else v.set(x, y, z, ropeAt(C, x, y, z, inner));
-      }
-    }
+  // A fixed speckle from the cell, so the mantle reads grizzled rather than flat.
+  const speck = (x, y, z) => ((Math.imul(x + 17, 73856093) ^ Math.imul(y + 29, 19349663) ^ Math.imul(z + 13, 83492791)) >>> 0) % 9;
+  const mantle = (C, x, y, z) => {
+    const s = speck(x, y, z);
+    return s < 3 ? C.grey : s < 6 ? C.greyLt : s < 8 ? C.greyPale : C.bone;
   };
-  // On the head: outer ropes widen it past the cheeks, two framing the face hang to the
-  // collarbone, and the back ones carry on down into the curtain below.
-  const HEAD_ROPES = [
-    [-1, 6, 5, -2, [[1, "bone"], [-2, "teal"]]], [7, 6, 5, -1, [[2, "ochre"], [-1, "teal"]]],
-    [-2, -1, 7, -1, [[-1, "bone"]]], [-2, 1, 8, 0, [[3, "teal"], [0, "ochre"]]], [-2, 3, 7, 1, [[1, "bone"]]],
-    [8, -1, 7, 0, [[0, "ochre"]]], [8, 1, 8, -1, [[4, "bone"], [-1, "bone"]]], [8, 3, 7, 2, [[2, "teal"]]],
-    [-1, -2, 8, 0, []], [1, -2, 9, 0, []], [3, -2, 9, 0, []], [5, -2, 9, 0, []], [7, -2, 8, 0, []],
-    [0, -2, 8, 3, [[3, "bone"]]], [2, -2, 8, 4, [[4, "ochre"]]], [4, -2, 8, 3, [[3, "teal"]]], [6, -2, 8, 4, [[4, "bone"]]]
-  ];
-  // The curtain down his back, on the same grid, so each rope continues one from the head.
-  const BACK_ROPES = [
-    [-1, -2, -1, -6, [[-3, "ochre"], [-6, "bone"]]], [1, -2, -1, -8, [[-4, "bone"], [-8, "teal"]]],
-    [3, -2, -1, -7, [[-2, "teal"], [-7, "bone"]]], [5, -2, -1, -8, [[-5, "ochre"], [-8, "bone"]]],
-    [7, -2, -1, -5, [[-2, "bone"], [-5, "teal"]]],
-    [0, -1, -1, -4, [[-4, "bone"]], true], [2, -1, -1, -5, [[-5, "ochre"]], true], [4, -1, -1, -4, [[-4, "bone"]], true], [6, -1, -1, -5, [[-5, "teal"]], true]
-  ];
-  const BEAD = { bone: "#e4d9bf", ochre: "#b5612e", teal: "#5aa196" };
-  // Round beads threaded on the square ropes: each bulges past its rope on every side.
-  const beadGeometry = (beads, u, origin) => merge(...beads.map(([x, y, z, kind]) => moved(lathe({
-    profile: [[0, -0.5 * u], [0.62 * u, -0.5 * u], [0.86 * u, -0.22 * u], [0.86 * u, 0.22 * u], [0.62 * u, 0.5 * u], [0, 0.5 * u]],
-    segments: 8, color: BEAD[kind], emissive: kind === "teal" ? 0.45 : 0
-  }), origin.x + (x + 0.5) * u, origin.y + (y + 0.5) * u, origin.z + (z + 0.5) * u)));
-  let headBeads = [];
-  // A crook of sun-bleached driftwood, as long as the island's other staffs, gnarled at three knots, its hook curling out from the body
-  // with three knucklebones and a teal bead swinging on a cord.
-  const STAFF = { wood: 0, woodDk: 1, cord: 2, bone: 3, teal: 4 };
-  const STAFF_PALETTE = ["#b3a68d", "#8a7d66", "#3a2a1c", "#e4d9bf", "#4b8a82"].map(hexToRgb);
-  const GOLD_STAFF_PALETTE = ["#e0b53a", "#c99a2e", "#9c7a22", "#f0c95a", "#c99a2e"].map(hexToRgb);
-  const staffVoxels = () => {
-    const v = makeVox(), S = STAFF;
-    for (let y = -3; y <= 18; y++) v.set(0, y, 0, (y * 7) % 5 === 0 ? S.woodDk : S.wood);
-    for (const [x, y, z] of [[1, 4, 0], [-1, 9, 0], [0, 13, 1]]) v.set(x, y, z, S.woodDk);
-    for (const [x, y] of [[0, 19], [-1, 20], [-2, 20], [-3, 19], [-4, 18], [-4, 17], [-3, 16]]) v.set(x, y, 0, S.wood);
-    v.set(-3, 15, 0, S.cord);
-    v.set(-3, 14, 0, S.cord);
-    v.set(-3, 13, 0, S.bone);
-    v.set(-4, 12, 0, S.bone);
-    v.set(-2, 12, 0, S.bone);
-    v.set(-3, 11, 0, S.teal);
-    return v;
+  const lining = (C, x, y, z) => speck(x, y, z) % 3 ? C.lining : C.liningDk;
+  // The bib's sixteen beads carry the genesis block's timestamp, two bits a bead, most
+  // significant first, read row by row and left to right as you face him. Each bead's colour is its
+  // two bits plus its place in the row order, so a run of equal digits never makes a run
+  // of one colour; the cord round the back of his neck repeats that key in order.
+  const GENESIS = 1231006505;
+  const KEY = ["orange", "teal", "bone", "bead"];
+  const BIB_ROWS = [[7, 2, 6], [6, 2, 6], [5, 3, 5], [4, 3, 5]];
+  const bib = (v, C) => {
+    let i = 0;
+    for (const [y, x0, x1] of BIB_ROWS) for (let x = x0; x <= x1; x++, i++) {
+      const digit = Math.floor(GENESIS / 4 ** (15 - i)) % 4;
+      v.set(x, y, 5, C[KEY[(digit + i) % 4]]);
+    }
+    for (let x = 2; x <= 6; x++) v.set(x, 7, 0, C[KEY[(x - 2) % 4]]);
+  };
+  // A knobkerrie: a tapered shaft rising to a round knob, one ring of beads under it.
+  const KERRIE = { wood: "#5e3c22", knob: "#7a4e2c", beads: ["#f7931a", "#161616", "#5de0c5", "#e8e0cc"] };
+  const GOLD_KERRIE = { wood: "#c99a2e", knob: "#e0b53a", beads: ["#f0c95a", "#9c7a22", "#f0c95a", "#c99a2e"] };
+  const kerries = new Map();
+  const kerrieGeometry = (h, pal) => {
+    const key = `${h}:${pal === KERRIE ? "wood" : "gold"}`;
+    let geo = kerries.get(key);
+    if (!geo) {
+      const u = h / 16, knob = [];
+      for (let i = 0; i <= 8; i++) {
+        const a = -Math.PI / 2 + i / 8 * Math.PI;
+        knob.push([Math.cos(a) * 1.7 * u, 10.6 * u + Math.sin(a) * 1.7 * u]);
+      }
+      const beads = [];
+      for (let i = 0; i < 8; i++) {
+        const a = i / 8 * Math.PI * 2;
+        beads.push(box({ w: 0.6 * u, h: 0.6 * u, d: 0.6 * u, color: pal.beads[i % 4], offset: { x: Math.cos(a) * 0.75 * u, y: 8 * u, z: Math.sin(a) * 0.75 * u } }));
+      }
+      geo = merge(
+        lathe({ profile: [[0, -3 * u], [0.62 * u, -3 * u], [0.55 * u, 4 * u], [0.45 * u, 9.2 * u], [0, 9.2 * u]], segments: 8, color: pal.wood }),
+        lathe({ profile: knob, segments: 10, color: pal.knob }),
+        ...beads
+      );
+      kerries.set(key, geo);
+    }
+    return geo;
   };
   BL.characters.add({
     handle: "BitcoinUbuntu",
     joined: 1791876857,
     lastCommit: 1790270916,
     look: {
-      build: "slim", height: 1.12, hairless: true, noBrow: true, noPupils: true, face: "nose", hatY: 14,
-      portrait: { min: [-2, -3, -2], max: [8, 9, 8] },
-      skin: "#d9a06b", hair: "#35271b", fur: "#5e4833"
+      bald: true, cleanShaven: true, face: "nose", hatY: 9, height: 1.06,
+      portrait: { min: [-1, -2, -1], max: [7, 9, 8] },
+      skin: "#d9a06b", hair: "#2a1d14"
     },
     voice: {
-      poke: "Ooga knew you would poke.",
+      poke: "Honey badger not care.",
       idle: [
-        "Next block soon. Ooga feel it.",
-        "Bones say: hold.",
-        "The pile remembers.",
-        "Ooga dreamt this day.",
-        "Quiet. The chain is talking.",
-        "Not every banana is for eating.",
-        "Moon not care about price.",
-        "You will see. Then you will know."
+        "Oogabuntu.",
+        "Ubuntubuga.",
+        "I am because we are.",
+        "Beads remember when it started.",
+        "Count the beads. Mind the order.",
+        "Badger fears no fee.",
+        "Same rules for every Ooga.",
+        "Run node. Sleep well.",
+        "Small blocks. Big teeth.",
+        "Stack bananas. Then more."
       ]
     },
     dress: {
-      // Bare chest under a dusk mantle: it drapes past the shoulders, opens down the front
-      // with bone stitching on its edges, over an ochre sash and a hide wrap. A cord of
-      // bone and one teal stone lies on the chest.
+      // The badger's forelegs come over his shoulders and down his chest, its paws meeting
+      // under the bib with an orange bead between them. They take the place of the fur strap.
       torso(k, v) {
-        const C = colours(k);
-        for (const [key] of [...v.map]) {
-          const [x, y, z] = key.split(",").map(Number);
-          v.map.set(key, y <= 1 ? (x + z) % 3 ? C.hide : C.hideDk : y === 2 ? x % 2 ? C.sash : C.sashDk
-            : y >= 6 || x <= 2 || x >= 6 || z === 1 ? C.mantle : k.skinJ());
+        const C = colours(k), P = k.P;
+        for (const [key, c] of [...v.map]) {
+          if (c !== P.fur && c !== P.spot) continue;
+          const [x, y] = key.split(",").map(Number);
+          if (y >= 4) v.map.set(key, k.skinJ());
         }
-        v.fill(0, 0, 5, 7, 1, 4, C.mantle);
-        v.fill(8, 8, 5, 7, 1, 4, C.mantle);
-        v.fill(1, 2, 3, 7, 5, 5, C.mantle);
-        v.fill(6, 7, 3, 7, 5, 5, C.mantle);
-        for (const y of [3, 5, 7]) {
-          v.set(2, y, 5, C.stitch);
-          v.set(6, y, 5, C.stitch);
+        for (const x of [1, 7]) {
+          v.fill(x, x, 7, 7, 1, 4, C.black);
+          v.fill(x, x, 4, 7, 5, 5, C.black);
+          v.fill(x, x, 5, 7, 0, 0, C.black);
         }
-        for (const x of [0, 8]) v.fill(x, x, 5, 5, 1, 4, C.mantleDk);
-        v.set(3, 6, 5, C.bone);
-        v.set(4, 5, 5, C.bone);
-        v.set(5, 6, 5, C.bone);
-        v.set(4, 4, 5, C.teal);
-        k.loin = [C.hide, C.hideDk];
+        v.fill(1, 3, 3, 3, 5, 5, C.black);
+        v.fill(5, 7, 3, 3, 5, 5, C.black);
+        for (const x of [3, 5]) v.fill(x, x, 2, 3, 6, 6, C.bone);
+        v.set(4, 3, 5, C.orange);
+        bib(v, C);
       },
-      club: () => ({ voxels: staffVoxels(), palette: STAFF_PALETTE, goldPalette: GOLD_STAFF_PALETTE, rest: { x: 0.12, z: 0.24 }, carry: { x: 0.95, z: 0 } }),
-      // Lean bare forearms with a beaded cuff at each wrist, the mantle over the shoulders.
-      gear(k) {
-        const C = colours(k), v = makeVox();
-        v.fill(0, 2, 2, 7, 0, 2, k.skinJ);
-        v.fill(0, 2, 8, 10, 0, 2, C.mantle);
-        v.fill(-1, 3, 9, 10, -1, 3, (x, y, z) => (x === -1 || x === 3) && (z === -1 || z === 3) ? null : y === 9 ? C.mantleDk : C.mantle);
-        v.fill(-1, 3, 0, 1, -1, 3, k.skinJ);
-        const cuff = [C.bone, C.teal, C.bone, C.ochre];
-        let i = 0;
-        for (let x = -1; x <= 3; x++) for (let z = -1; z <= 3; z++) {
-          if ((x === -1 || x === 3) !== (z === -1 || z === 3)) v.set(x, 2, z, cuff[i++ % 4]);
-        }
-        k.parts.armL.geometry = k.parts.armR.geometry = k.vg(v, { x: -1.5 * k.u, y: -11 * k.u, z: -1.5 * k.u });
-      },
-      // Rope dreads swept back from the hairline, falling past the ears and framing the face.
+      club: (k) => ({ default: kerrieGeometry(k.h, KERRIE), gold: kerrieGeometry(k.h, GOLD_KERRIE) }),
+      // The hood: a grizzled mantle rounded over the crown and down to the nape, black at the
+      // flanks, a dark mottled rim where the face opens, and the badger's head over his brow.
       crown(k, v) {
         const C = colours(k);
-        const mass = (x, y, z) => massAt(C, x, y, z);
-        v.fill(-1, 7, 6, 8, -1, 5, mass);
-        v.fill(0, 6, 9, 9, 0, 4, mass);
-        v.fill(-1, -1, 0, 5, -1, 5, mass);
-        v.fill(7, 7, 0, 5, -1, 5, mass);
-        v.fill(-1, 7, 0, 5, -1, -1, mass);
-        v.del(3, 6, 5);
-        // The top ropes gathered into a loose knot at the crown, wound with a bone and ochre cord.
-        v.fill(1, 5, 10, 10, 0, 3, mass);
-        v.fill(2, 4, 11, 12, 0, 3, (x, y, z) => y === 11 ? (x + z) % 2 ? C.bone : C.ochre : mass(x, y, z));
-        v.fill(2, 4, 13, 13, 1, 2, mass);
-        v.set(3, 14, 1, C.deepLt);
-        headBeads = [];
-        lay(v, C, HEAD_ROPES, headBeads);
-      },
-      // Pale eyes under heavy lids, both glancing off to one side, as if he has already
-      // seen what is coming; a brow over each, set forward so the eyes sit in its shade.
-      eyes(k, v) {
-        const C = colours(k);
-        for (const x of [0, 1, 5, 6]) {
-          v.set(x, 2, 5, x === 1 || x === 6 ? C.pupil : C.eye);
-          v.set(x, 3, 5, k.P.skinDk);
-          k.eyeCells.push([x, 2]);
+        const pelt = (x, y, z) => mantle(C, x, y, z);
+        v.fill(-1, 7, 6, 7, -1, 5, (x, y, z) => y === 7 && (x === -1 || x === 7) && (z === -1 || z === 5) ? null : pelt(x, y, z));
+        v.fill(0, 6, 8, 8, 0, 4, (x, y, z) => (x === 0 || x === 6) && (z === 0 || z === 4) ? null : pelt(x, y, z));
+        for (const x of [-1, 7]) {
+          v.fill(x, x, 1, 5, -1, 4, (_, y, z) => y === 1 && z === -1 ? null : z === 4 ? lining(C, x, y, z) : y <= 2 ? C.black : pelt(x, y, z));
         }
-        v.fill(0, 2, 4, 4, 6, 6, C.deepLt);
-        v.fill(4, 6, 4, 4, 6, 6, C.deepLt);
-        return true;
-      },
-      // A thin braid off the chin with one bone bead.
-      mark(k, v) {
-        const C = colours(k);
-        v.fill(2, 4, 0, 0, 6, 6, k.P.skinDk);
-        v.set(3, -1, 6, C.deepLt);
-        v.set(3, -2, 6, C.band);
-        headBeads.push([3, -3, 6, "bone"]);
-      },
-      headgear(k) {
-        const u = k.u;
-        addChild(k.parts.head, createNode({ geometry: beadGeometry(headBeads, u, { x: -3.5 * u, y: 0, z: -3 * u }) }));
-      },
-      // The curtain hangs from the torso, not the root, so it stays on him in bed; the
-      // counter-scale undoes the torso's girth so it lines up with the head's ropes.
-      extras(k) {
-        const C = colours(k), u = k.u, h = k.h, b = k.traits.belly, v = makeVox(), beads = [];
-        lay(v, C, BACK_ROPES, beads);
-        const origin = { x: -3.5 * u, y: 0.5 * h, z: -3 * u + 0.02 * h };
-        const curtain = createNode({ scale: { x: 1 / b, y: 1, z: 1 / b }, geometry: k.vg(v, origin) });
-        addChild(curtain, createNode({ geometry: beadGeometry(beads, u, origin) }));
-        addChild(k.parts.torso, curtain);
+        v.fill(0, 6, 1, 5, -1, -1, (x, y, z) => y === 1 ? C.black : pelt(x, y, z));
+        // The badger: under the grey cap a black face, wide at the eyes and narrowing to a
+        // short snout that rests on his forehead, with small glinting eyes and stub ears.
+        v.fill(0, 6, 7, 7, 5, 6, C.black);
+        v.fill(1, 5, 6, 6, 5, 6, C.black);
+        v.set(0, 6, 5, lining(C, 0, 6, 5));
+        v.set(6, 6, 5, lining(C, 6, 6, 5));
+        v.fill(2, 4, 5, 5, 6, 7, C.black);
+        v.set(3, 5, 7, C.nose);
+        v.fill(1, 5, 8, 8, 5, 6, pelt);
+        v.set(1, 7, 6, C.glint);
+        v.set(5, 7, 6, C.glint);
+        v.set(0, 8, 5, C.black);
+        v.set(6, 8, 5, C.black);
+        k.headEmissive = { [C.glint]: 0.6 };
       }
     }
   });
