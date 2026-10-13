@@ -1,7 +1,8 @@
 (() => {
   "use strict";
   const BL = window.BL;
-  const { lathe, merge, moved, turnedY, turnedZ } = BL.models;
+  const { geometry, pushVert, face, lathe, merge, moved, turnedY, turnedZ } = BL.models;
+  const { hexToRgb } = BL.math;
   const { createNode, addChild } = BL.scene;
     // The Honey Badger: Bitcoin's mascot, and the Southern African animal that raids the bees' nests
   // and walks off cobra bites. He wears one as a hood: its head over his brow, its grizzled mantle
@@ -25,13 +26,31 @@
     }
     return merge(...pieces);
   };
-  // A knobkerrie: a hardwood throwing club, a thin shaft swelling into a round knob.
-  const knobkerrieGeometry = (h, gold = false) => {
+  // A flat convex outline in x and y, pushed out to `depth` around z = 0, every face wound outward.
+  const slab = (points, depth, color) => {
+    const geo = geometry(), rgb = hexToRgb(color);
+    const front = points.map(([x, y]) => pushVert(geo, x, y, depth / 2));
+    const back = points.map(([x, y]) => pushVert(geo, x, y, -depth / 2));
+    face(geo, front, rgb);
+    face(geo, [...back].reverse(), rgb);
+    for (let i = 0; i < points.length; i++) {
+      const j = (i + 1) % points.length;
+      face(geo, [front[i], back[i], back[j], front[j]], rgb);
+    }
+    return geo;
+  };
+  // An assegai: the short stabbing spear, a long leaf blade of hammered iron with a raised midrib,
+  // bound to a hardwood haft with a hide wrap.
+  const assegaiGeometry = (h, gold = false) => {
     const u = h / 16;
-    const wood = gold ? "#c9a03c" : "#4a2c18", knot = gold ? "#e0b84a" : "#5e3a20";
+    const wood = gold ? "#a77b32" : "#5a3a1f", iron = gold ? "#e0b84a" : "#8f959b", rib = gold ? "#c99a2e" : "#6d7379";
+    const hide = "#3f2415";
+    const leaf = [[0, 12.6], [0.75, 13.6], [1.05, 15], [0.95, 16.6], [0.6, 18.2], [0, 19.6], [-0.6, 18.2], [-0.95, 16.6], [-1.05, 15], [-0.75, 13.6]];
     return merge(
-      lathe({ profile: [[0, -1.6 * u], [0.5 * u, -1.5 * u], [0.55 * u, 2 * u], [0.48 * u, 8.7 * u]], segments: 8, color: wood }),
-      lathe({ profile: [[0.48 * u, 8.6 * u], [1.1 * u, 8.95 * u], [1.65 * u, 9.75 * u], [1.8 * u, 10.6 * u], [1.6 * u, 11.5 * u], [1 * u, 12.2 * u], [0, 12.4 * u]], segments: 8, color: knot }),
+      lathe({ profile: [[0, -4 * u], [0.42 * u, -3.9 * u], [0.45 * u, 6 * u], [0.4 * u, 13 * u]], segments: 8, color: wood }),
+      lathe({ profile: [[0.5 * u, 11.2 * u], [0.58 * u, 11.5 * u], [0.58 * u, 12.9 * u], [0.45 * u, 13.2 * u]], segments: 8, color: hide }),
+      slab(leaf.map(([x, y]) => [x * u, y * u]), 0.16 * u, iron),
+      slab([[0, 13 * u], [0.22 * u, 15 * u], [0, 19.2 * u], [-0.22 * u, 15 * u]], 0.34 * u, rib)
     );
   };
   BL.characters.add({
@@ -101,7 +120,8 @@
         v.set(0, 10, 4, mantle());
         v.set(6, 10, 4, mantle());
       },
-      club: (k) => ({ default: knobkerrieGeometry(k.h), gold: knobkerrieGeometry(k.h, true) }),
+      // The spear stands upright in the grip.
+      club: (k) => ({ default: assegaiGeometry(k.h), gold: assegaiGeometry(k.h, true), rest: { x: 0.2, z: 0 } }),
       extras(k) {
         addChild(k.parts.torso, createNode({ geometry: necklaceGeometry(k.h) }));
       }
