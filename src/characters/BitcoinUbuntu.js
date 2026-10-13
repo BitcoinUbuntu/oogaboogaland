@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const BL = window.BL;
-  const { box, lathe, merge, moved, turnedY } = BL.models;
+  const { lathe, merge, moved, turnedY, turnedZ } = BL.models;
   const { createNode, addChild } = BL.scene;
   // The Honey Badger: Bitcoin's mascot, and the Southern African animal that raids the bees' nests
   // and walks off cobra bites. He wears one as a hood: its head over his brow, its grizzled mantle
@@ -16,14 +16,19 @@
   // Outer to inner: bead count, half-width, half-depth, height at the back and drop to the front,
   // in sixteenths of height. Each row lies on the shoulders and slopes down the chest.
   const RINGS = [[42, 4.7, 3.4, 7.15, 1.6], [36, 4.1, 3, 7.5, 1.1], [30, 3.5, 2.6, 7.85, 0.6]];
+  // A rounded bead strung along x: a short barrel with softened ends, turned to face along its string.
+  const bead = (radius, length, color, a) => {
+    const r = radius, l = length / 2;
+    return turnedY(turnedZ(lathe({ profile: [[0, -l], [r * 0.65, -l], [r, -l * 0.45], [r, l * 0.45], [r * 0.65, l], [0, l]], segments: 8, color }), Math.PI / 2), a);
+  };
   const collarGeometry = (h) => {
     const u = h / 16, pieces = [];
     let n = 0;
     for (const [count, rx, rz, y, drop] of RINGS) {
       for (let i = 0; i < count; i++, n++) {
-        const digit = parseInt(GENESIS[n >> 1], 16), bead = n & 1 ? digit & 3 : digit >> 2;
+        const digit = parseInt(GENESIS[n >> 1], 16), beadColor = n & 1 ? digit & 3 : digit >> 2;
         const a = (i - 4) / count * Math.PI * 2;
-        pieces.push(moved(turnedY(box({ w: 0.54 * u, h: 0.54 * u, d: 0.54 * u, color: BEADS[bead] }), a),
+        pieces.push(moved(bead(0.3 * u, 0.52 * u, BEADS[beadColor], a),
           Math.sin(a) * rx * u, (y - drop * (1 + Math.cos(a)) / 2) * u, Math.cos(a) * rz * u));
       }
     }
@@ -37,7 +42,7 @@
     const beads = [];
     for (let i = 0; i < 10; i++) {
       const a = i / 10 * Math.PI * 2;
-      beads.push(moved(turnedY(box({ w: 0.34 * u, h: 0.4 * u, d: 0.34 * u, color: BEADS[i % 2 ? 1 : 3] }), a),
+      beads.push(moved(bead(0.22 * u, 0.38 * u, BEADS[i % 2 ? 1 : 3], a),
         Math.sin(a) * 0.62 * u, 7.8 * u, Math.cos(a) * 0.62 * u));
     }
     return merge(
